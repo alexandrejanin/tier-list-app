@@ -37,6 +37,8 @@ class _TierListViewState extends State<TierListView> {
             mode = Mode.View;
           }),
         );
+      default:
+        return null;
     }
   }
 
@@ -44,7 +46,7 @@ class _TierListViewState extends State<TierListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.tierList.name),
+        title: Text(widget.tierList.title),
         actions: [getIconButton()],
       ),
       body: widget.tierList.tiers != null && widget.tierList.tiers.isNotEmpty
@@ -100,9 +102,9 @@ class TierRow extends StatelessWidget {
             color: tier.color,
             padding: const EdgeInsets.all(8),
             child: Text(
-              tier.name,
+              tier.title,
               style: TextStyle(
-                fontSize: tier.name.length > 2 ? 14 : 24,
+                fontSize: tier.title.length > 2 ? 14 : 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -133,7 +135,7 @@ class TierRow extends StatelessWidget {
 class TierItem extends StatelessWidget {
   static const width = 80.0;
   static const height = 80.0;
-  final TierListItem item;
+  final Item item;
 
   const TierItem({Key key, this.item}) : super(key: key);
 
@@ -153,7 +155,7 @@ class TierItem extends StatelessWidget {
           height: height,
           fit: BoxFit.cover,
           image: NetworkImage(
-            item.imageUrl != null ? item.imageUrl : "",
+            item.imageSource != null ? item.imageSource : "",
           ),
         ),
       ),
