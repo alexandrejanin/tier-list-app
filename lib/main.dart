@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tier_list_app/create_tier_list_panel.dart';
 
 import 'home.dart';
 
@@ -20,6 +21,15 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({Key key}) : super(key: key);
+
+  void createTierList(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateTierListPanel(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +58,9 @@ class MyHomePage extends StatelessWidget {
       ),
       body: HomeFeed(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(
-          Icons.add,
-        ),
+        onPressed: () => createTierList(context),
+        child: Icon(Icons.add),
+        tooltip: "Créer une nouvelle Tier List",
       ),
     );
   }

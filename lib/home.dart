@@ -188,19 +188,23 @@ class TierListTile extends StatelessWidget {
 
   TierListTile({this.tierList});
 
+  void openTierList(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TierListView(
+          tierList: tierList,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10),
       child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TierListView(
-              tierList: tierList,
-            ),
-          ),
-        ),
+        onTap: () => openTierList(context),
         child: Column(
           children: [
             ClipRRect(

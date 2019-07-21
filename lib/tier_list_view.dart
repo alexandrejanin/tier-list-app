@@ -6,8 +6,6 @@ import 'tier_list.dart';
 enum Mode { View, Edit }
 
 class TierListView extends StatefulWidget {
-  static _TierListViewState of(BuildContext context) =>
-      context.ancestorStateOfType(const TypeMatcher<TierListView>());
   final TierList tierList;
 
   const TierListView({Key key, this.tierList}) : super(key: key);
@@ -19,20 +17,20 @@ class TierListView extends StatefulWidget {
 class _TierListViewState extends State<TierListView> {
   Mode mode = Mode.View;
 
-  IconButton getIconButton() {
+  FloatingActionButton getIconButton() {
     switch (mode) {
       case Mode.View:
-        return IconButton(
+        return FloatingActionButton(
           tooltip: "Edit Mode",
-          icon: Icon(Icons.edit),
+          child: Icon(Icons.edit),
           onPressed: () => setState(() {
             mode = Mode.Edit;
           }),
         );
       case Mode.Edit:
-        return IconButton(
+        return FloatingActionButton(
           tooltip: "Finish Editing",
-          icon: Icon(Icons.check),
+          child: Icon(Icons.check),
           onPressed: () => setState(() {
             mode = Mode.View;
           }),
@@ -47,8 +45,8 @@ class _TierListViewState extends State<TierListView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.tierList.title),
-        actions: [getIconButton()],
       ),
+      floatingActionButton: getIconButton(),
       body: widget.tierList.tiers != null && widget.tierList.tiers.isNotEmpty
           ? ListView(
               children: widget.tierList.tiers
