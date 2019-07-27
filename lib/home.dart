@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:tier_list_app/api_config.dart' as apiConfig;
 import 'package:tier_list_app/tier_list.dart';
 import 'package:tier_list_app/tier_list_view.dart';
+import 'package:tier_list_app/create_tier_list_panel.dart';
 
 class HomeFeed extends StatefulWidget {
   @override
@@ -22,6 +23,15 @@ class _HomeFeedState extends State<HomeFeed> {
   void initState() {
     super.initState();
     getTierLists();
+  }
+
+  void createTierList(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateTierListPanel(),
+      ),
+    );
   }
 
   void getTierLists() async {
@@ -42,10 +52,12 @@ class _HomeFeedState extends State<HomeFeed> {
             .map((tierListMap) => TierList.fromJson(tierListMap))
             .toList();
       }
+      debugPrint("Loading successful");
     } on TimeoutException catch (e) {
       debugPrint("Timeout!");
       debugPrint(e.toString());
     } on SocketException catch (e) {
+      debugPrint("SocketException!");
       debugPrint(e.toString());
     } finally {
       setState(() {
@@ -55,95 +67,80 @@ class _HomeFeedState extends State<HomeFeed> {
     }
   }
 
+  List<TierList> defaultTierLists() {
+    return [
+      TierList(
+        "Films de Tarantino",
+        imageSource:
+            "https://www.quentintarantinofanclub.com/upload/img/09201722195344-book-quentin-tarantino-a-retrospective.jpg",
+      ),
+      TierList(
+        "Films du MCU",
+        imageSource:
+            "https://ksassets.timeincuk.net/wp/uploads/sites/55/2019/04/Payoff_1-Sht_Online_v6_Domestic_Sm-1-e1552570783683.jpg",
+      ),
+      TierList(
+        "Films ayant gagné un Oscar du meilleur film",
+        imageSource:
+            "https://www.goldderby.com/wp-content/uploads/2017/12/Oscar-statuette-trophy-atmo.png",
+      ),
+      TierList(
+        "Morceaux de Dans la légende",
+        imageSource:
+            "https://images.genius.com/adf6cea1deac12e134b2b241b9e16f8e.1000x1000x1.jpg",
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return _loading
-        ? Center(
-            child: CircularProgressIndicator(),
+    return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            DrawerHeader(child: Text("Test")),
+            ListTile(title: Text("Mon Compte")),
+            ListTile(title: Text("Mes Amis")),
+          ],
+        ),
+      ),
+      appBar: AppBar(
+        title: Text("Tier Lists"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: getTierLists,
           )
-        : ListView(
-            children: [
-              HomeRow(
-                title: "Tendances",
-                tierLists: _homeTierLists,
-              ),
-              HomeRow(
-                title: "Mes Tier Lists",
-                tierLists: [
-                  TierList(
-                    "Films de Tarantino",
-                    imageSource:
-                        "https://www.quentintarantinofanclub.com/upload/img/09201722195344-book-quentin-tarantino-a-retrospective.jpg",
-                  ),
-                  TierList(
-                    "Films du MCU",
-                    imageSource:
-                        "https://ksassets.timeincuk.net/wp/uploads/sites/55/2019/04/Payoff_1-Sht_Online_v6_Domestic_Sm-1-e1552570783683.jpg",
-                  ),
-                  TierList(
-                    "Films ayant gagné un Oscar du meilleur film",
-                    imageSource:
-                        "https://www.goldderby.com/wp-content/uploads/2017/12/Oscar-statuette-trophy-atmo.png",
-                  ),
-                  TierList(
-                    "Morceaux de Dans la légende",
-                    imageSource:
-                        "https://images.genius.com/adf6cea1deac12e134b2b241b9e16f8e.1000x1000x1.jpg",
-                  ),
-                ],
-              ),
-              HomeRow(
-                title: "Tier Lists de mes amis",
-                tierLists: [
-                  TierList(
-                    "Films de Tarantino",
-                    imageSource:
-                        "https://www.quentintarantinofanclub.com/upload/img/09201722195344-book-quentin-tarantino-a-retrospective.jpg",
-                  ),
-                  TierList(
-                    "Films du MCU",
-                    imageSource:
-                        "https://ksassets.timeincuk.net/wp/uploads/sites/55/2019/04/Payoff_1-Sht_Online_v6_Domestic_Sm-1-e1552570783683.jpg",
-                  ),
-                  TierList(
-                    "Films ayant gagné un Oscar du meilleur film",
-                    imageSource:
-                        "https://www.goldderby.com/wp-content/uploads/2017/12/Oscar-statuette-trophy-atmo.png",
-                  ),
-                  TierList(
-                    "Morceaux de Dans la légende",
-                    imageSource:
-                        "https://images.genius.com/adf6cea1deac12e134b2b241b9e16f8e.1000x1000x1.jpg",
-                  ),
-                ],
-              ),
-              HomeRow(
-                title: "Tier Lists que j'aime",
-                tierLists: [
-                  TierList(
-                    "Films de Tarantino",
-                    imageSource:
-                        "https://www.quentintarantinofanclub.com/upload/img/09201722195344-book-quentin-tarantino-a-retrospective.jpg",
-                  ),
-                  TierList(
-                    "Films du MCU",
-                    imageSource:
-                        "https://ksassets.timeincuk.net/wp/uploads/sites/55/2019/04/Payoff_1-Sht_Online_v6_Domestic_Sm-1-e1552570783683.jpg",
-                  ),
-                  TierList(
-                    "Films ayant gagné un Oscar du meilleur film",
-                    imageSource:
-                        "https://www.goldderby.com/wp-content/uploads/2017/12/Oscar-statuette-trophy-atmo.png",
-                  ),
-                  TierList(
-                    "Morceaux de Dans la légende",
-                    imageSource:
-                        "https://images.genius.com/adf6cea1deac12e134b2b241b9e16f8e.1000x1000x1.jpg",
-                  ),
-                ],
-              ),
-            ],
-          );
+        ],
+      ),
+      body: _loading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                HomeRow(
+                  title: "Tendances",
+                  tierLists: _homeTierLists,
+                ),
+                HomeRow(
+                  title: "Mes Tier Lists",
+                  tierLists: defaultTierLists(),
+                ),
+                HomeRow(
+                  title: "Tier Lists de mes amis",
+                  tierLists: defaultTierLists(),
+                ),
+                HomeRow(
+                  title: "Tier Lists que j'aime",
+                  tierLists: defaultTierLists(),
+                ),
+              ],
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => createTierList(context),
+        child: Icon(Icons.add),
+        tooltip: "Créer une nouvelle Tier List",
+      ),
+    );
   }
 }
 
@@ -163,9 +160,7 @@ class HomeRow extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             title,
-            style: TextStyle(
-              fontSize: 24,
-            ),
+            style: TextStyle(fontSize: 24),
           ),
         ),
         Container(
@@ -192,9 +187,7 @@ class TierListTile extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TierListView(
-          tierList: tierList,
-        ),
+        builder: (context) => TierListView(tierList: tierList),
       ),
     );
   }
@@ -214,14 +207,9 @@ class TierListTile extends StatelessWidget {
                       width: size,
                       height: size,
                       fit: BoxFit.cover,
-                      image: NetworkImage(
-                        tierList.imageSource,
-                      ),
+                      image: NetworkImage(tierList.imageSource),
                     )
-                  : Container(
-                      width: size,
-                      height: size,
-                    ),
+                  : Container(width: size, height: size),
             ),
             Container(
               padding: const EdgeInsets.only(top: 8.0),
@@ -229,9 +217,7 @@ class TierListTile extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 tierList.title,
-                style: TextStyle(
-                  fontSize: 15,
-                ),
+                style: TextStyle(fontSize: 15),
                 textAlign: TextAlign.center,
               ),
             ),
