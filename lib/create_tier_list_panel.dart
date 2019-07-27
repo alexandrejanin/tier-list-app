@@ -12,17 +12,19 @@ class CreateTierListPanel extends StatelessWidget {
 
   void validate(BuildContext context, String title, String description) async {
     try {
-      await http
+      final res = await http
           .post(
-            apiUrl + "tierlists",
+            '$apiUrl/tierlists',
             headers: {'Content-Type': 'application/json'},
             body: json.encode({'title': title, 'description': description}),
           )
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 5));
+
+      debugPrint(res.body);
 
       Navigator.pop(context);
     } on TimeoutException catch (e) {
-      debugPrint("Timeout!");
+      debugPrint("Timeout on POST");
       debugPrint(e.toString());
     } on SocketException catch (e) {
       debugPrint("SocketException!");

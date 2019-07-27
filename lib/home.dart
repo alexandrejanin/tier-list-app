@@ -5,7 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:tier_list_app/api_config.dart' as apiConfig;
+import 'package:tier_list_app/api_config.dart';
 import 'package:tier_list_app/tier_list.dart';
 import 'package:tier_list_app/tier_list_view.dart';
 import 'package:tier_list_app/create_tier_list_panel.dart';
@@ -40,12 +40,11 @@ class _HomeFeedState extends State<HomeFeed> {
     });
 
     try {
-      var response = await http
-          .get(apiConfig.apiUrl + "tierlists")
-          .timeout(const Duration(seconds: 3));
-      debugPrint(response.body);
+      final res = await http
+          .get('$apiUrl/tierlists')
+          .timeout(const Duration(seconds: 5));
 
-      var responseData = json.decode(response.body);
+      var responseData = json.decode(res.body);
 
       if (responseData['success']) {
         _homeTierLists = List<Map<String, dynamic>>.from(responseData['result'])
@@ -54,7 +53,7 @@ class _HomeFeedState extends State<HomeFeed> {
       }
       debugPrint("Loading successful");
     } on TimeoutException catch (e) {
-      debugPrint("Timeout!");
+      debugPrint("Timeout on GET");
       debugPrint(e.toString());
     } on SocketException catch (e) {
       debugPrint("SocketException!");
@@ -106,7 +105,7 @@ class _HomeFeedState extends State<HomeFeed> {
       ),
       appBar: AppBar(
         title: Text("Tier Lists"),
-        actions: <Widget>[
+        actions: [
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: getTierLists,

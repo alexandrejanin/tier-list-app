@@ -1,7 +1,13 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'tier_list.dart';
+import 'package:tier_list_app/api_config.dart';
+import 'package:tier_list_app/tier_list.dart';
 
 enum Mode { View, Edit }
 
@@ -17,7 +23,47 @@ class TierListView extends StatefulWidget {
 class _TierListViewState extends State<TierListView> {
   Mode mode = Mode.View;
 
-  FloatingActionButton getIconButton() {
+  void deleteTierList(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: new Text("Delete tier list"),
+            content:
+                new Text("Are you sure you want to delete this tier list?"),
+            actions: [
+              new FlatButton(
+                child: new Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              new FlatButton(
+                child: new Text("Delete"),
+                onPressed: () async {
+                  try {
+                    final res = await http
+                        .delete('$apiUrl/tierlists/${widget.tierList.id}')
+                        .timeout(const Duration(seconds: 5));
+                    debugPrint(res.body);
+                    Navigator.pop(context);
+                  } on TimeoutException catch (e) {
+                    debugPrint("Timeout on DELETE");
+                    debugPrint(e.toString());
+                  } on SocketException catch (e) {
+                    debugPrint("SocketException!");
+                    debugPrint(e.toString());
+                  } finally {
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  FloatingActionButton getActionButton() {
     switch (mode) {
       case Mode.View:
         return FloatingActionButton(
@@ -45,8 +91,16 @@ class _TierListViewState extends State<TierListView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.tierList.title),
+        actions: mode == Mode.Edit
+            ? [
+                IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () => deleteTierList(context),
+                ),
+              ]
+            : [],
       ),
-      floatingActionButton: getIconButton(),
+      floatingActionButton: getActionButton(),
       body: widget.tierList.tiers != null && widget.tierList.tiers.isNotEmpty
           ? ListView(
               children: widget.tierList.tiers
