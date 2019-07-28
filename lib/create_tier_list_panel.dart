@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -23,12 +22,8 @@ class CreateTierListPanel extends StatelessWidget {
       debugPrint(res.body);
 
       Navigator.pop(context);
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       debugPrint("Timeout on POST");
-      debugPrint(e.toString());
-    } on SocketException catch (e) {
-      debugPrint("SocketException!");
-      debugPrint(e.toString());
     }
   }
 

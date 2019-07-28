@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -52,12 +51,8 @@ class _HomeFeedState extends State<HomeFeed> {
             .toList();
       }
       debugPrint("Loading successful");
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       debugPrint("Timeout on GET");
-      debugPrint(e.toString());
-    } on SocketException catch (e) {
-      debugPrint("SocketException!");
-      debugPrint(e.toString());
     } finally {
       setState(() {
         _loading = false;
@@ -164,12 +159,13 @@ class HomeRow extends StatelessWidget {
         ),
         Container(
           height: TierListTile.size + 50,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, i) => TierListTile(
-              tierList: tierLists[i % tierLists.length],
-            ),
-          ),
+          child: this.tierLists.length > 0
+              ? ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, i) => TierListTile(
+                        tierList: tierLists[i % tierLists.length],
+                      ))
+              : Center(child: Text("Could not fetch")),
         ),
       ],
     );
@@ -208,7 +204,10 @@ class TierListTile extends StatelessWidget {
                       fit: BoxFit.cover,
                       image: NetworkImage(tierList.imageSource),
                     )
-                  : Container(width: size, height: size),
+                  : Icon(
+                      Icons.view_list,
+                      size: size,
+                    ),
             ),
             Container(
               padding: const EdgeInsets.only(top: 8.0),

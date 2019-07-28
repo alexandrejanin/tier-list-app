@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
@@ -22,6 +22,18 @@ class TierListView extends StatefulWidget {
 
 class _TierListViewState extends State<TierListView> {
   Mode mode = Mode.View;
+
+  void updateTierList(BuildContext context) async {
+    try {
+      final res = await http.put(
+        '$apiUrl/tierlists/${widget.tierList.id}',
+        body: json.encode({'tierList': widget.tierList}),
+      );
+      debugPrint(res.body);
+    } on TimeoutException {
+      debugPrint("Timeout on PUT");
+    }
+  }
 
   void deleteTierList(BuildContext context) {
     showDialog(
@@ -47,12 +59,8 @@ class _TierListViewState extends State<TierListView> {
                         .timeout(const Duration(seconds: 5));
                     debugPrint(res.body);
                     Navigator.pop(context);
-                  } on TimeoutException catch (e) {
+                  } on TimeoutException {
                     debugPrint("Timeout on DELETE");
-                    debugPrint(e.toString());
-                  } on SocketException catch (e) {
-                    debugPrint("SocketException!");
-                    debugPrint(e.toString());
                   } finally {
                     Navigator.pop(context);
                   }
