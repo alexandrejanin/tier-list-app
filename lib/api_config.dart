@@ -1,1 +1,1 @@
-const apiUrl = "http://4a712e46.ngrok.io";
+const apiUrl = "https://ff7248e9.ngrok.io";

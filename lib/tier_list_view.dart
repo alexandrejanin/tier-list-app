@@ -25,11 +25,13 @@ class _TierListViewState extends State<TierListView> {
 
   void updateTierList(BuildContext context) async {
     try {
+      final body = json.encode({'tierList': widget.tierList.toJson()});
       final res = await http.put(
         '$apiUrl/tierlists/${widget.tierList.id}',
-        body: json.encode({'tierList': widget.tierList}),
+        body: body,
+        headers: {'Content-Type': 'application/json'},
       );
-      debugPrint(res.body);
+      debugPrint('tierlist update success: ${jsonDecode(res.body)['success']}');
     } on TimeoutException {
       debugPrint("Timeout on PUT");
     }
@@ -85,9 +87,12 @@ class _TierListViewState extends State<TierListView> {
         return FloatingActionButton(
           tooltip: "Finish Editing",
           child: Icon(Icons.check),
-          onPressed: () => setState(() {
-            mode = Mode.View;
-          }),
+          onPressed: () {
+            updateTierList(context);
+            setState(() {
+              mode = Mode.View;
+            });
+          },
         );
       default:
         return null;
@@ -139,10 +144,10 @@ class TierRow extends StatelessWidget {
     }
 
     if (mode == Mode.Edit) {
-      items.add(AddItemButton());
+      items.add(AddItemButton(tier: tier));
     }
 
-    if (tier.items == null || tier.items.isEmpty) {
+    if (items.isEmpty) {
       items.add(Container(width: TierItem.width, height: TierItem.height));
     }
 
@@ -210,20 +215,86 @@ class TierItem extends StatelessWidget {
         onLongPress: () {
           HapticFeedback.lightImpact();
         },
-        child: Image(
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-          image: NetworkImage(
-            item.imageSource != null ? item.imageSource : "",
-          ),
-        ),
+        child: item.imageSource != null && item.imageSource.length > 0
+            ? Image(
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+                image: NetworkImage(
+                  item.imageSource,
+                ),
+              )
+            : Container(
+                width: width,
+                height: height,
+                child: Card(
+                  child: Center(
+                    child: Text(item.title),
+                  ),
+                ),
+              ),
       ),
     );
   }
 }
 
-class AddItemButton extends StatelessWidget {
+class AddItemButton extends StatefulWidget {
+  final Tier tier;
+
+  const AddItemButton({Key key, this.tier}) : super(key: key);
+
+  @override
+  _AddItemButtonState createState() => _AddItemButtonState();
+}
+
+class _AddItemButtonState extends State<AddItemButton> {
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final urlController = TextEditingController();
+
+  void showAddItemDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          actions: [
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                widget.tier.items.add(new Item(
+                  nameController.text,
+                  imageSource: urlController.text,
+                ));
+                Navigator.pop(context);
+              },
+            ),
+          ],
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Add new item'),
+                TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                  ),
+                ),
+                TextFormField(
+                  controller: urlController,
+                  decoration: InputDecoration(
+                    labelText: 'Image Source',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -233,7 +304,7 @@ class AddItemButton extends StatelessWidget {
         child: Icon(
           Icons.add,
         ),
-        onPressed: () {},
+        onPressed: () => showAddItemDialog(context),
       ),
     );
   }

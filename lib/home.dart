@@ -50,7 +50,7 @@ class _HomeFeedState extends State<HomeFeed> {
             .map((tierListMap) => TierList.fromJson(tierListMap))
             .toList();
       }
-      debugPrint("Loading successful");
+      debugPrint("${_homeTierLists.length} tierlists loaded");
     } on TimeoutException {
       debugPrint("Timeout on GET");
     } finally {
@@ -165,7 +165,7 @@ class HomeRow extends StatelessWidget {
                   itemBuilder: (context, i) => TierListTile(
                         tierList: tierLists[i % tierLists.length],
                       ))
-              : Center(child: Text("Could not fetch")),
+              : Center(child: Text("No tier lists found")),
         ),
       ],
     );
