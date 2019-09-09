@@ -22,27 +22,32 @@ class TierListView extends StatefulWidget {
 
 class _TierListViewState extends State<TierListView> {
   Mode mode = Mode.View;
-  String tierListJson;
   String jsonBeforeEdit;
 
-  bool get unsavedChanges => tierListJson != jsonBeforeEdit;
+  bool get unsavedChanges =>
+      json.encode(widget.tierList.toJson()) != jsonBeforeEdit;
 
   @override
   void initState() {
     super.initState();
     jsonBeforeEdit = json.encode(widget.tierList.toJson());
-    tierListJson = jsonBeforeEdit;
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('build');
     return WillPopScope(
       onWillPop: () => _onWillPop(context),
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.tierList.title),
-          actions: _getActions(),
+          actions: unsavedChanges
+              ? [
+                  IconButton(
+                    icon: Icon(Icons.check),
+                    onPressed: _updateTierList,
+                  )
+                ]
+              : null,
         ),
         floatingActionButton: _getActionButton(),
         body: widget.tierList.tiers != null && widget.tierList.tiers.isNotEmpty
@@ -89,17 +94,6 @@ class _TierListViewState extends State<TierListView> {
     );
   }
 
-  List<Widget> _getActions() {
-    List<Widget> actions = [];
-    if (unsavedChanges) {
-      actions.add(IconButton(
-        icon: Icon(Icons.check),
-        onPressed: _updateTierList,
-      ));
-    }
-    return actions;
-  }
-
   void _updateTierList() async {
     try {
       final body = json.encode({'tierList': widget.tierList.toJson()});
@@ -109,8 +103,9 @@ class _TierListViewState extends State<TierListView> {
         headers: {'Content-Type': 'application/json'},
       );
       debugPrint('tierlist update success: ${jsonDecode(res.body)['success']}');
-      jsonBeforeEdit = json.encode(widget.tierList.toJson());
-      tierListJson = jsonBeforeEdit;
+      setState(() {
+        jsonBeforeEdit = json.encode(widget.tierList.toJson());
+      });
     } on TimeoutException {
       debugPrint("Timeout on PUT");
     }
