@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:tier_list_app/api_config.dart';
+import 'package:tier_list_app/loading_image.dart';
 import 'package:tier_list_app/tier_list.dart';
 import 'package:tier_list_app/tier_list_view.dart';
 import 'package:tier_list_app/create_tier_list_panel.dart';
@@ -195,19 +196,15 @@ class TierListTile extends StatelessWidget {
         onTap: () => openTierList(context),
         child: Column(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: tierList.imageSource != null
-                  ? Image(
-                      width: size,
-                      height: size,
-                      fit: BoxFit.cover,
-                      image: NetworkImage(tierList.imageSource),
-                    )
-                  : Icon(
-                      Icons.view_list,
-                      size: size,
-                    ),
+            LoadingImage(
+              width: size,
+              height: size,
+              url: tierList.imageSource,
+              borderRadius: 20,
+              placeholder: Icon(
+                Icons.view_list,
+                size: size,
+              ),
             ),
             Container(
               padding: const EdgeInsets.only(top: 8.0),

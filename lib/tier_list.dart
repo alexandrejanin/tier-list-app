@@ -5,19 +5,28 @@ class TierList {
   String title;
   String description;
   String imageSource;
-  final List<Tier> tiers;
+  List<Tier> tiers;
 
   TierList(this.title,
       {this.id, this.description, this.imageSource, this.tiers});
 
-  TierList.fromJson(Map<String, dynamic> tierListMap)
-      : id = tierListMap['id'],
-        title = tierListMap['title'],
-        description = tierListMap['description'],
-        imageSource = tierListMap['imagesource'],
-        tiers = List<Map<String, dynamic>>.from(tierListMap['tiers'])
+  TierList.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        title = json['title'],
+        description = json['description'],
+        imageSource = json['imagesource'],
+        tiers = List<Map<String, dynamic>>.from(json['tiers'])
             .map<Tier>((tierMap) => Tier.fromJson(tierMap))
             .toList();
+
+  void updateFromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    description = json['description'];
+    imageSource = json['imagesource'];
+    tiers = List<Map<String, dynamic>>.from(json['tiers'])
+        .map<Tier>((tierMap) => Tier.fromJson(tierMap))
+        .toList();
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -36,11 +45,11 @@ class Tier {
 
   Tier(this.title, {this.description, this.color, this.items});
 
-  Tier.fromJson(Map<String, dynamic> tierMap)
-      : title = tierMap['title'],
-        description = tierMap['description'],
-        color = Color(int.parse(tierMap['color'].replaceFirst("#", "0xFF"))),
-        items = List<Map<String, dynamic>>.from(tierMap['items'])
+  Tier.fromJson(Map<String, dynamic> json)
+      : title = json['title'],
+        description = json['description'],
+        color = Color(int.parse(json['color'].replaceFirst("#", "0xFF"))),
+        items = List<Map<String, dynamic>>.from(json['items'])
             .map((Map<String, dynamic> itemMap) => Item.fromJson(itemMap))
             .toList();
 
@@ -59,10 +68,10 @@ class Item {
 
   Item(this.title, {this.description, this.imageSource});
 
-  Item.fromJson(Map<String, dynamic> itemMap)
-      : title = itemMap['title'],
-        description = itemMap['description'],
-        imageSource = itemMap['imageSource'];
+  Item.fromJson(Map<String, dynamic> json)
+      : title = json['title'],
+        description = json['description'],
+        imageSource = json['imageSource'];
 
   Map<String, dynamic> toJson() => {
         'title': title,
