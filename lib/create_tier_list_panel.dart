@@ -82,7 +82,7 @@ class _CreateTierListPanelState extends State<CreateTierListPanel> {
         body['imageSource'] = imageSource;
       }
 
-      final res = await http
+      await http
           .post(
             '$apiUrl/tierlists',
             headers: {'Content-Type': 'application/json'},

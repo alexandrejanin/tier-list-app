@@ -66,6 +66,8 @@ class Item {
   String description;
   String imageSource;
 
+  bool get hasImage => imageSource != null && imageSource.isNotEmpty;
+
   Item(this.title, {this.description, this.imageSource});
 
   Item.fromJson(Map<String, dynamic> json)

@@ -39,7 +39,18 @@ class _TierListViewState extends State<TierListView> {
       onWillPop: () => _onWillPop(context),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.tierList.title),
+          title: Row(
+            children: <Widget>[
+              Text(widget.tierList.title),
+              IconButton(
+                icon: Icon(Icons.info_outline),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) => TierListInfoDialog(widget.tierList),
+                ),
+              ),
+            ],
+          ),
           actions: unsavedChanges
               ? [
                   IconButton(
@@ -50,17 +61,15 @@ class _TierListViewState extends State<TierListView> {
               : null,
         ),
         floatingActionButton: _getActionButton(),
-        body: widget.tierList.tiers != null && widget.tierList.tiers.isNotEmpty
-            ? ListView(
-                children: widget.tierList.tiers
-                    .map((tier) => TierRow(
-                          tier: tier,
-                          mode: mode,
-                        ))
-                    .toList(),
-              )
-            : Center(
+        body: widget.tierList.tiers == null || widget.tierList.tiers.isEmpty
+            ? Center(
                 child: Text("Tier List empty!"),
+              )
+            : ListView(
+                children: [
+                  for (var tier in widget.tierList.tiers)
+                    TierRow(tier: tier, mode: mode)
+                ],
               ),
       ),
     );
@@ -72,7 +81,7 @@ class _TierListViewState extends State<TierListView> {
     }
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: Text('Save changes?'),
         actions: [
           FlatButton(
@@ -111,40 +120,6 @@ class _TierListViewState extends State<TierListView> {
     }
   }
 
-  void _deleteTierList(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Delete tier list"),
-          content: Text("Are you sure you want to delete this tier list?"),
-          actions: [
-            FlatButton(
-              child: Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
-            ),
-            FlatButton(
-              child: Text("Delete"),
-              onPressed: () async {
-                try {
-                  final res = await http
-                      .delete('$apiUrl/tierlists/${widget.tierList.id}')
-                      .timeout(const Duration(seconds: 5));
-                  debugPrint(res.body);
-                  Navigator.pop(context);
-                } on TimeoutException {
-                  debugPrint("Timeout on DELETE");
-                } finally {
-                  Navigator.pop(context);
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   FloatingActionButton _getActionButton() {
     return mode == Mode.Edit
         ? FloatingActionButton(
@@ -157,6 +132,69 @@ class _TierListViewState extends State<TierListView> {
             child: Icon(Icons.edit),
             onPressed: () => setState(() => mode = Mode.Edit),
           );
+  }
+}
+
+class TierListInfoDialog extends StatelessWidget {
+  final TierList tierList;
+
+  const TierListInfoDialog(this.tierList, {Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: <Widget>[
+          Text(tierList.title),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              Navigator.pop(context);
+              return showDialog(
+                context: context,
+                builder: (_) => DeleteTierListDialog(tierList),
+              );
+            },
+          ),
+        ],
+      ),
+      content: Text(tierList.description ?? ""),
+    );
+  }
+}
+
+class DeleteTierListDialog extends StatelessWidget {
+  final TierList tierList;
+
+  const DeleteTierListDialog(this.tierList, {Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Delete tier list"),
+      content: Text("Are you sure you want to delete this tier list?"),
+      actions: [
+        FlatButton(
+          child: Text("Cancel"),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Delete"),
+          onPressed: () async {
+            try {
+              await http
+                  .delete('$apiUrl/tierlists/${tierList.id}')
+                  .timeout(const Duration(seconds: 5));
+              Navigator.pop(context);
+            } on TimeoutException {
+              debugPrint("Timeout on DELETE");
+            } finally {
+              Navigator.pop(context);
+            }
+          },
+        ),
+      ],
+    );
   }
 }
 
@@ -229,9 +267,7 @@ class _TierRowState extends State<TierRow> {
             ),
             onPressed: () => showDialog(
               context: context,
-              builder: (context) => AddItemDialog(
-                callback: (item) => widget.tier.items.add(item),
-              ),
+              builder: (_) => AddItemDialog(widget.tier),
             ),
           ),
         ),
@@ -246,7 +282,7 @@ class _TierRowState extends State<TierRow> {
   }
 }
 
-class TierItem extends StatefulWidget {
+class TierItem extends StatelessWidget {
   static const width = 80.0;
   static const height = 80.0;
 
@@ -256,133 +292,133 @@ class TierItem extends StatefulWidget {
   const TierItem({Key key, this.item, this.mode}) : super(key: key);
 
   @override
-  _TierItemState createState() => _TierItemState();
-}
-
-class _TierItemState extends State<TierItem> {
-  final _formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final urlController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    nameController.text = widget.item.title;
-    urlController.text = widget.item.imageSource;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: _onTap,
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) =>
+            mode == Mode.Edit ? ItemEditDialog(item) : ItemInfoDialog(item),
+      ),
       child: LoadingImage(
         width: TierItem.width,
         height: TierItem.height,
-        url: widget.item.imageSource,
+        url: item.imageSource,
         borderRadius: 10,
         placeholder: Container(
           width: TierItem.width,
           height: TierItem.height,
           child: Card(
             child: Center(
-              child: Text(widget.item.title),
+              child: Text(item.title),
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  void _onTap() {
-    if (widget.mode == Mode.Edit) {
-      _showItemEditDialog(context);
-    } else {
-      _showItemInfoDialog(context);
-    }
-  }
+class ItemInfoDialog extends StatelessWidget {
+  final Item item;
 
-  void _showItemEditDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          actions: [
-            FlatButton(
-              child: Text('Update'),
-              onPressed: () {
-                widget.item.title = nameController.text;
-                widget.item.imageSource = urlController.text;
-                Navigator.pop(context);
-              },
-            ),
-          ],
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Edit item'),
-                TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                  ),
-                ),
-                TextFormField(
-                  controller: urlController,
-                  decoration: InputDecoration(
-                    labelText: 'Image Source',
-                  ),
-                ),
-              ],
+  const ItemInfoDialog(this.item, {Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      actions: [
+        IconButton(
+          icon: Icon(Icons.edit),
+          onPressed: () {
+            Navigator.pop(context);
+            showDialog(
+              context: context,
+              builder: (_) => ItemEditDialog(item),
+            );
+          },
+        )
+      ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Text(
+              item.title,
+              style: TextStyle(
+                fontSize: 24.0,
+              ),
             ),
           ),
-        );
-      },
+          if (item.hasImage) Image.network(item.imageSource),
+        ],
+      ),
     );
   }
+}
 
-  void _showItemInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          actions: [
-            IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                Navigator.pop(context);
-                _showItemEditDialog(context);
-              },
-            )
-          ],
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Text(
-                  widget.item.title,
-                  style: TextStyle(
-                    fontSize: 24.0,
-                  ),
-                ),
-              ),
-              Image.network(widget.item.imageSource),
-            ],
+class ItemEditDialog extends StatefulWidget {
+  final Item item;
+
+  const ItemEditDialog(this.item, {Key key}) : super(key: key);
+
+  @override
+  _ItemEditDialogState createState() => _ItemEditDialogState();
+}
+
+class _ItemEditDialogState extends State<ItemEditDialog> {
+  TextEditingController titleController;
+  TextEditingController imageSourceController;
+
+  @override
+  void initState() {
+    super.initState();
+    titleController = TextEditingController(text: widget.item.title);
+    imageSourceController =
+        TextEditingController(text: widget.item.imageSource);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      actions: [
+        FlatButton(
+          child: Text('Update'),
+          onPressed: () {
+            widget.item.title = titleController.text;
+            widget.item.imageSource = imageSourceController.text;
+            Navigator.pop(context);
+          },
+        ),
+      ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Edit item'),
+          TextFormField(
+            controller: titleController,
+            decoration: InputDecoration(
+              labelText: 'Name',
+            ),
           ),
-        );
-      },
+          TextFormField(
+            controller: imageSourceController,
+            decoration: InputDecoration(
+              labelText: 'Image Source',
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class AddItemDialog extends StatelessWidget {
-  final Function(Item) callback;
+  final Tier tier;
   final nameController = TextEditingController();
   final urlController = TextEditingController();
 
-  AddItemDialog({Key key, this.callback});
+  AddItemDialog(this.tier, {Key key});
 
   @override
   Widget build(BuildContext context) {
@@ -392,7 +428,7 @@ class AddItemDialog extends StatelessWidget {
           child: Text('Add'),
           onPressed: () {
             if (nameController.text.length != 0) {
-              callback(Item(
+              tier.items.add(Item(
                 nameController.text,
                 imageSource: urlController.text,
               ));

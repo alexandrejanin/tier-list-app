@@ -62,31 +62,6 @@ class _HomeFeedState extends State<HomeFeed> {
     }
   }
 
-  List<TierList> defaultTierLists() {
-    return [
-      TierList(
-        "Films de Tarantino",
-        imageSource:
-            "https://www.quentintarantinofanclub.com/upload/img/09201722195344-book-quentin-tarantino-a-retrospective.jpg",
-      ),
-      TierList(
-        "Films du MCU",
-        imageSource:
-            "https://ksassets.timeincuk.net/wp/uploads/sites/55/2019/04/Payoff_1-Sht_Online_v6_Domestic_Sm-1-e1552570783683.jpg",
-      ),
-      TierList(
-        "Films ayant gagné un Oscar du meilleur film",
-        imageSource:
-            "https://www.goldderby.com/wp-content/uploads/2017/12/Oscar-statuette-trophy-atmo.png",
-      ),
-      TierList(
-        "Morceaux de Dans la légende",
-        imageSource:
-            "https://images.genius.com/adf6cea1deac12e134b2b241b9e16f8e.1000x1000x1.jpg",
-      ),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,20 +88,8 @@ class _HomeFeedState extends State<HomeFeed> {
           : ListView(
               children: [
                 HomeRow(
-                  title: "Tendances",
-                  tierLists: _homeTierLists,
-                ),
-                HomeRow(
                   title: "Mes Tier Lists",
-                  tierLists: defaultTierLists(),
-                ),
-                HomeRow(
-                  title: "Tier Lists de mes amis",
-                  tierLists: defaultTierLists(),
-                ),
-                HomeRow(
-                  title: "Tier Lists que j'aime",
-                  tierLists: defaultTierLists(),
+                  tierLists: _homeTierLists,
                 ),
               ],
             ),

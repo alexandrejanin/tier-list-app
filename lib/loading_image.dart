@@ -3,12 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class LoadingImage extends StatelessWidget {
+class LoadingImage extends StatefulWidget {
   final double width;
   final double height;
   final String url;
   final Widget placeholder;
   final double borderRadius;
+
+  bool get validUrl => url != null && url.isNotEmpty;
 
   const LoadingImage({
     Key key,
@@ -20,31 +22,58 @@ class LoadingImage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _LoadingImageState createState() => _LoadingImageState();
+}
+
+class _LoadingImageState extends State<LoadingImage> {
+  bool loaded = false;
+  NetworkImage image;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.validUrl) {
+      image = NetworkImage(widget.url);
+      image
+          .resolve(ImageConfiguration())
+          .addListener(ImageStreamListener((i, b) {
+        if (mounted) {
+          setState(() {
+            loaded = true;
+          });
+        }
+      }));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return url == null || url.length == 0
-        ? placeholder
-        : Stack(
-            children: [
-              SizedBox(
-                width: width,
-                height: height,
-                child: Padding(
-                  padding: EdgeInsets.all(min(width, height) / 3),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(borderRadius),
-                child: FadeInImage(
-                  width: width,
-                  height: height,
-                  fit: BoxFit.cover,
-                  image: NetworkImage(url),
-                  placeholder: MemoryImage(kTransparentImage),
-                  fadeInDuration: const Duration(milliseconds: 100),
-                ),
-              ),
-            ],
-          );
+    if (!widget.validUrl) {
+      return widget.placeholder;
+    }
+    return Stack(
+      children: [
+        if (!loaded)
+          SizedBox(
+            width: widget.width,
+            height: widget.height,
+            child: Padding(
+              padding: EdgeInsets.all(min(widget.width, widget.height) / 3),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          child: FadeInImage(
+            width: widget.width,
+            height: widget.height,
+            fit: BoxFit.cover,
+            image: image,
+            placeholder: MemoryImage(kTransparentImage),
+            fadeInDuration: const Duration(milliseconds: 100),
+          ),
+        ),
+      ],
+    );
   }
 }
